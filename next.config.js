@@ -19,6 +19,8 @@ const nextConfig = {
         }
       }),
     ],
+    qualities: [75, 100],
+    unoptimized: process.env.NODE_ENV !== 'production',
   },
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {

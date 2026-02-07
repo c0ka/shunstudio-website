@@ -1,7 +1,6 @@
-@import '~@payloadcms/ui/scss';
-
 .admin-bar {
-  @include small-break {
+  // Value taken from src/cssVariables.js (md: 768)
+  @media (max-width: 768px) {
     display: none;
   }
 }
