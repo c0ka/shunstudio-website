@@ -60,11 +60,11 @@ export default buildConfig({
   editor: defaultLexical,
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.POSTGRES_URL || '',
-      ssl: {
-        ca: process.env.SUPABASE_SSL_CERT,
-        rejectUnauthorized: true,
-      },
+      connectionString: process.env.DATABASE_URL || '',
+      // ssl: {
+      //   ca: process.env.SUPABASE_SSL_CERT,
+      //   rejectUnauthorized: true,
+      // },
     },
   }),
   collections: [Pages, Posts, Media, Categories, Users],
