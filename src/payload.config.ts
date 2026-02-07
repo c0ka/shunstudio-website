@@ -1,8 +1,10 @@
-import { postgresAdapter } from '@payloadcms/db-postgres'
-import sharp from 'sharp'
 import path from 'path'
-import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
+
+import { postgresAdapter } from '@payloadcms/db-postgres'
+import { buildConfig, PayloadRequest } from 'payload'
+
+import sharp from 'sharp'
 
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'

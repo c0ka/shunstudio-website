@@ -18,6 +18,14 @@ const nextConfig = {
           protocol: url.protocol.replace(':', ''),
         }
       }),
+      ...(process.env.S3_ENDPOINT
+        ? [
+            {
+              hostname: new URL(process.env.S3_ENDPOINT).hostname,
+              protocol: 'https',
+            },
+          ]
+        : []),
     ],
     qualities: [75, 100],
     localPatterns: [{ pathname: '/api/media/**' }],
