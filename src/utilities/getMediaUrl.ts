@@ -1,5 +1,3 @@
-import { getClientSideURL } from '@/utilities/getURL'
-
 /**
  * Processes media resource URL to ensure proper formatting
  * @param url The original URL from the resource
@@ -18,7 +16,6 @@ export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | 
     return cacheTag ? `${url}?${cacheTag}` : url
   }
 
-  // Otherwise prepend client-side URL
-  const baseUrl = getClientSideURL()
-  return cacheTag ? `${baseUrl}${url}?${cacheTag}` : `${baseUrl}${url}`
+  // Otherwise return relative URL
+  return cacheTag ? `${url}?${cacheTag}` : url
 }

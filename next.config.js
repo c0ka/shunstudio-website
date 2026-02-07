@@ -20,7 +20,7 @@ const nextConfig = {
       }),
     ],
     qualities: [75, 100],
-    unoptimized: process.env.NODE_ENV !== 'production',
+    localPatterns: [{ pathname: '/api/media/**' }],
   },
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {
