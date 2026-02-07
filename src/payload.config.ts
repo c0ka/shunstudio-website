@@ -18,6 +18,7 @@ import { getServerSideURL } from './utilities/getURL'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+// todo: supabase S3
 export default buildConfig({
   admin: {
     components: {
@@ -60,6 +61,10 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.POSTGRES_URL || '',
+      ssl: {
+        ca: process.env.SUPABASE_SSL_CERT,
+        rejectUnauthorized: true,
+      },
     },
   }),
   collections: [Pages, Posts, Media, Categories, Users],
