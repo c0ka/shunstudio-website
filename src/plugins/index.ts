@@ -28,7 +28,9 @@ const generateURL: GenerateURL<Post | Page> = ({ doc }) => {
 
 export const plugins: Plugin[] = [
   payloadCloudPlugin(),
-  ...(process.env.NODE_ENV === 'production'
+  ...(process.env.NODE_ENV === 'production' ||
+  process.env.VERCEL ||
+  process.argv.includes('generate:importmap')
     ? [
         s3Storage({
           collections: {
