@@ -1,5 +1,5 @@
 ---
-title: Hooks
+name: Hooks
 description: Collection hooks, field hooks, and context patterns
 tags: [payload, hooks, lifecycle, context]
 ---

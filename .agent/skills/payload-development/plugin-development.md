@@ -1,5 +1,5 @@
 ---
-title: Plugin Development
+name: Plugin Development
 description: Creating Payload CMS plugins with TypeScript patterns
 tags: [payload, plugins, architecture, patterns]
 ---

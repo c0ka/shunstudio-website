@@ -1,5 +1,5 @@
 ---
-title: Collections
+name: Collections
 description: Collection configurations and patterns
 tags: [payload, collections, auth, upload, drafts]
 ---

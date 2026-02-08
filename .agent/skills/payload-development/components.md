@@ -1,3 +1,9 @@
+---
+name: Components
+description: Custom components for Payload CMS
+tags: [payload, components, react, admin-panel]
+---
+
 # Custom Components in Payload CMS
 
 Custom Components allow you to fully customize the Admin Panel by swapping in your own React components. You can replace nearly every part of the interface or add entirely new functionality.

@@ -1,5 +1,5 @@
 ---
-title: Custom Endpoints
+name: Custom Endpoints
 description: Custom REST API endpoints with authentication and helpers
 tags: [payload, endpoints, api, routes, webhooks]
 ---

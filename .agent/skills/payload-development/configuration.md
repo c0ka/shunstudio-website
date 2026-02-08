@@ -1,3 +1,9 @@
+---
+name: Project Configuration
+description: Project configuration
+tags: [payload, configuration]
+---
+
 ## Project Structure
 
 ```

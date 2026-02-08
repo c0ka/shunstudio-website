@@ -1,5 +1,5 @@
 ---
-title: Fields
+name: Fields
 description: Field types, patterns, and configurations
 tags: [payload, fields, validation, conditional]
 ---

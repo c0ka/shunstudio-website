@@ -1,5 +1,5 @@
 ---
-title: Database Adapters & Transactions
+name: Database Adapters & Transactions
 description: Database adapters, storage, email, and transaction patterns
 tags: [payload, database, mongodb, postgres, sqlite, transactions]
 ---
