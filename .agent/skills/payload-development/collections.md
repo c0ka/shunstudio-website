@@ -1,22 +1,17 @@
 ---
 name: Collections
-description: Collection configurations and patterns
-tags: [payload, collections, auth, upload, drafts]
+description: Collection configurations
+tags: [payload, collections]
 ---
 
-# Payload CMS Collections
+# Collections
 
-## Basic Collection
+## Basic
 
 ```typescript
-import type { CollectionConfig } from 'payload'
-
 export const Posts: CollectionConfig = {
   slug: 'posts',
-  admin: {
-    useAsTitle: 'title',
-    defaultColumns: ['title', 'author', 'status', 'createdAt'],
-  },
+  admin: { useAsTitle: 'title', defaultColumns: ['title', 'author', 'status', 'createdAt'] },
   fields: [
     { name: 'title', type: 'text', required: true },
     { name: 'slug', type: 'text', unique: true, index: true },
@@ -27,7 +22,7 @@ export const Posts: CollectionConfig = {
 }
 ```
 
-## Auth Collection with RBAC
+## Auth with RBAC
 
 ```typescript
 export const Users: CollectionConfig = {
@@ -40,17 +35,14 @@ export const Users: CollectionConfig = {
       hasMany: true,
       options: ['admin', 'editor', 'user'],
       defaultValue: ['user'],
-      required: true,
-      saveToJWT: true, // Include in JWT for fast access checks
-      access: {
-        update: ({ req: { user } }) => user?.roles?.includes('admin'),
-      },
+      saveToJWT: true,
+      access: { update: ({ req: { user } }) => user?.roles?.includes('admin') },
     },
   ],
 }
 ```
 
-## Upload Collection
+## Upload
 
 ```typescript
 export const Media: CollectionConfig = {
@@ -59,111 +51,47 @@ export const Media: CollectionConfig = {
     staticDir: 'media',
     mimeTypes: ['image/*'],
     imageSizes: [
-      {
-        name: 'thumbnail',
-        width: 400,
-        height: 300,
-        position: 'centre',
-      },
-      {
-        name: 'card',
-        width: 768,
-        height: 1024,
-      },
+      { name: 'thumbnail', width: 400, height: 300, position: 'centre' },
+      { name: 'card', width: 768, height: 1024 },
     ],
     adminThumbnail: 'thumbnail',
-    focalPoint: true,
-    crop: true,
   },
-  access: {
-    read: () => true,
-  },
-  fields: [
-    {
-      name: 'alt',
-      type: 'text',
-      required: true,
-    },
-  ],
+  fields: [{ name: 'alt', type: 'text', required: true }],
 }
 ```
 
-## Versioning & Drafts
+## Drafts
 
 ```typescript
 export const Pages: CollectionConfig = {
   slug: 'pages',
   versions: {
-    drafts: {
-      autosave: true,
-      schedulePublish: true,
-      validate: false, // Don't validate drafts
-    },
+    drafts: { autosave: true, schedulePublish: true, validate: false },
     maxPerDoc: 100,
   },
   access: {
-    read: ({ req: { user } }) => {
-      // Public sees only published
-      if (!user) return { _status: { equals: 'published' } }
-      // Authenticated sees all
-      return true
-    },
+    read: ({ req: { user } }) => (user ? true : { _status: { equals: 'published' } }),
   },
 }
-```
 
-### Draft API Usage
-
-```typescript
-// Create draft
-await payload.create({
-  collection: 'posts',
-  data: { title: 'Draft Post' },
-  draft: true, // Skips required field validation
-})
-
-// Read with drafts
-const page = await payload.findByID({
-  collection: 'pages',
-  id: '123',
-  draft: true, // Returns draft version if exists
-})
+// API
+await payload.create({ collection: 'posts', data: { title: 'Draft' }, draft: true })
+await payload.findByID({ collection: 'pages', id: '123', draft: true })
 ```
 
 ## Globals
 
-Globals are single-instance documents (not collections).
-
 ```typescript
-import type { GlobalConfig } from 'payload'
-
 export const Header: GlobalConfig = {
   slug: 'header',
-  label: 'Header',
-  admin: {
-    group: 'Settings',
-  },
   fields: [
-    {
-      name: 'logo',
-      type: 'upload',
-      relationTo: 'media',
-      required: true,
-    },
+    { name: 'logo', type: 'upload', relationTo: 'media' },
     {
       name: 'nav',
       type: 'array',
-      maxRows: 8,
       fields: [
-        {
-          name: 'link',
-          type: 'relationship',
-          relationTo: 'pages',
-        },
-        {
-          name: 'label',
-          type: 'text',
-        },
+        { name: 'link', type: 'relationship', relationTo: 'pages' },
+        { name: 'label', type: 'text' },
       ],
     },
   ],

@@ -1,223 +1,75 @@
 ---
 name: Queries
-description: Local API, REST, and GraphQL query patterns
-tags: [payload, queries, local-api, rest, graphql]
+description: Local API query patterns
+tags: [payload, queries]
 ---
 
-# Payload CMS Queries
+# Queries
 
-## Query Operators
+## Operators
 
-```typescript
-// Equals
-{ color: { equals: 'blue' } }
+| Operator          | Example                                     |
+| ----------------- | ------------------------------------------- |
+| `equals`          | `{ color: { equals: 'blue' } }`             |
+| `not_equals`      | `{ status: { not_equals: 'draft' } }`       |
+| `greater_than`    | `{ price: { greater_than: 100 } }`          |
+| `less_than_equal` | `{ age: { less_than_equal: 65 } }`          |
+| `contains`        | `{ title: { contains: 'payload' } }`        |
+| `like`            | `{ description: { like: 'cms headless' } }` |
+| `in`              | `{ category: { in: ['tech', 'news'] } }`    |
+| `exists`          | `{ image: { exists: true } }`               |
+| `near`            | `{ location: { near: [10, 20, 5000] } }`    |
 
-// Not equals
-{ status: { not_equals: 'draft' } }
-
-// Greater/less than
-{ price: { greater_than: 100 } }
-{ age: { less_than_equal: 65 } }
-
-// Contains (case-insensitive)
-{ title: { contains: 'payload' } }
-
-// Like (all words present)
-{ description: { like: 'cms headless' } }
-
-// In/not in
-{ category: { in: ['tech', 'news'] } }
-
-// Exists
-{ image: { exists: true } }
-
-// Near (point fields)
-{ location: { near: [10, 20, 5000] } } // [lng, lat, maxDistance]
-```
-
-## AND/OR Logic
+## Logic
 
 ```typescript
-{
-  or: [
-    { color: { equals: 'mint' } },
-    {
-      and: [
-        { color: { equals: 'white' } },
-        { featured: { equals: false } },
-      ],
-    },
-  ],
-}
-```
-
-## Nested Properties
-
-```typescript
-{
-  'author.role': { equals: 'editor' },
-  'meta.featured': { exists: true },
-}
+{ or: [{ color: { equals: 'mint' } }, { and: [{ color: { equals: 'white' } }, { featured: { equals: false } }] }] }
+{ 'author.role': { equals: 'editor' } } // Nested
 ```
 
 ## Local API
 
 ```typescript
-// Find documents
+// Find
 const posts = await payload.find({
   collection: 'posts',
-  where: {
-    status: { equals: 'published' },
-    'author.name': { contains: 'john' },
-  },
-  depth: 2, // Populate relationships
-  limit: 10,
-  page: 1,
-  sort: '-createdAt',
-  locale: 'en',
-  select: {
-    title: true,
-    author: true,
-  },
-})
-
-// Find by ID
-const post = await payload.findByID({
-  collection: 'posts',
-  id: '123',
+  where: { status: { equals: 'published' } },
   depth: 2,
+  limit: 10,
+  sort: '-createdAt',
+  select: { title: true, author: true },
 })
 
-// Create
-const post = await payload.create({
-  collection: 'posts',
-  data: {
-    title: 'New Post',
-    status: 'draft',
-  },
-})
+// By ID
+const post = await payload.findByID({ collection: 'posts', id: '123' })
 
-// Update
-await payload.update({
-  collection: 'posts',
-  id: '123',
-  data: {
-    status: 'published',
-  },
-})
-
-// Delete
-await payload.delete({
-  collection: 'posts',
-  id: '123',
-})
+// Create/Update/Delete
+await payload.create({ collection: 'posts', data: { title: 'New' } })
+await payload.update({ collection: 'posts', id: '123', data: { status: 'published' } })
+await payload.delete({ collection: 'posts', id: '123' })
 
 // Count
 const count = await payload.count({
   collection: 'posts',
-  where: {
-    status: { equals: 'published' },
-  },
+  where: { status: { equals: 'published' } },
 })
 ```
 
-## Access Control in Local API
+## Access Control
 
-**CRITICAL**: Local API bypasses access control by default (`overrideAccess: true`).
+**CRITICAL**: Local API bypasses access by default.
 
 ```typescript
-// ❌ WRONG: User is passed but access control is bypassed
-const posts = await payload.find({
-  collection: 'posts',
-  user: currentUser,
-  // Result: Operation runs with ADMIN privileges
-})
+// ❌ WRONG
+await payload.find({ collection: 'posts', user: currentUser })
 
-// ✅ CORRECT: Respects user's access control permissions
-const posts = await payload.find({
-  collection: 'posts',
-  user: currentUser,
-  overrideAccess: false, // Required to enforce access control
-})
-
-// Administrative operation (intentionally bypass access control)
-const allPosts = await payload.find({
-  collection: 'posts',
-  // No user parameter, overrideAccess defaults to true
-})
+// ✅ CORRECT
+await payload.find({ collection: 'posts', user: currentUser, overrideAccess: false })
 ```
 
-**When to use `overrideAccess: false`:**
+## Performance
 
-- Performing operations on behalf of a user
-- Testing access control logic
-- API routes that should respect user permissions
-
-## REST API
-
-```typescript
-import { stringify } from 'qs-esm'
-
-const query = {
-  status: { equals: 'published' },
-}
-
-const queryString = stringify(
-  {
-    where: query,
-    depth: 2,
-    limit: 10,
-  },
-  { addQueryPrefix: true },
-)
-
-const response = await fetch(`https://api.example.com/api/posts${queryString}`)
-const data = await response.json()
-```
-
-### REST Endpoints
-
-```
-GET    /api/{collection}           - Find documents
-GET    /api/{collection}/{id}      - Find by ID
-POST   /api/{collection}           - Create
-PATCH  /api/{collection}/{id}      - Update
-DELETE /api/{collection}/{id}      - Delete
-GET    /api/{collection}/count     - Count documents
-
-GET    /api/globals/{slug}         - Get global
-POST   /api/globals/{slug}         - Update global
-```
-
-## GraphQL
-
-```graphql
-query {
-  Posts(where: { status: { equals: published } }, limit: 10, sort: "-createdAt") {
-    docs {
-      id
-      title
-      author {
-        name
-      }
-    }
-    totalDocs
-    hasNextPage
-  }
-}
-
-mutation {
-  createPost(data: { title: "New Post", status: draft }) {
-    id
-    title
-  }
-}
-```
-
-## Performance Best Practices
-
-- Set `maxDepth` on relationships to prevent over-fetching
-- Use `select` to limit returned fields
-- Index frequently queried fields
-- Use `virtual` fields for computed data
-- Cache expensive operations in hook `context`
+- Set `maxDepth` on relationships
+- Use `select` to limit fields
+- Index queried fields
+- Cache in `req.context`

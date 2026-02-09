@@ -1,27 +1,12 @@
 ---
 name: Project Configuration
-description: Project configuration
+description: Project configuration and setup
 tags: [payload, configuration]
 ---
 
-## Project Structure
+# Payload Configuration
 
-```
-src/
-├── app/
-│   ├── (frontend)/          # Frontend routes
-│   └── (payload)/           # Payload admin routes
-├── collections/             # Collection configs
-├── globals/                 # Global configs
-├── components/              # Custom React components
-├── hooks/                   # Hook functions
-├── access/                  # Access control functions
-└── payload.config.ts        # Main config
-```
-
-## Configuration
-
-### Minimal Config Pattern
+## Minimal Config
 
 ```typescript
 import { buildConfig } from 'payload'
@@ -36,9 +21,7 @@ const dirname = path.dirname(filename)
 export default buildConfig({
   admin: {
     user: 'users',
-    importMap: {
-      baseDir: path.resolve(dirname),
-    },
+    importMap: { baseDir: path.resolve(dirname) },
   },
   collections: [Users, Media],
   editor: lexicalEditor(),
@@ -46,9 +29,7 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: mongooseAdapter({
-    url: process.env.DATABASE_URL,
-  }),
+  db: mongooseAdapter({ url: process.env.DATABASE_URL }),
 })
 ```
 
@@ -61,11 +42,7 @@ import config from '@payload-config'
 
 export async function GET() {
   const payload = await getPayload({ config })
-
-  const posts = await payload.find({
-    collection: 'posts',
-  })
-
+  const posts = await payload.find({ collection: 'posts' })
   return Response.json(posts)
 }
 
@@ -76,7 +53,6 @@ import config from '@payload-config'
 export default async function Page() {
   const payload = await getPayload({ config })
   const { docs } = await payload.find({ collection: 'posts' })
-
   return <div>{docs.map(post => <h1 key={post.id}>{post.title}</h1>)}</div>
 }
 ```

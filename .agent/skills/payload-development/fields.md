@@ -1,301 +1,67 @@
 ---
 name: Fields
-description: Field types, patterns, and configurations
-tags: [payload, fields, validation, conditional]
+description: Field types and patterns
+tags: [payload, fields]
 ---
 
-# Payload CMS Fields
+# Fields
 
-## Common Field Patterns
+## Common Patterns
 
 ```typescript
-// Auto-generate slugs
 import { slugField } from 'payload'
+
+// Auto-slug
 slugField({ fieldToUse: 'title' })
 
-// Relationship with filtering
-{
-  name: 'category',
-  type: 'relationship',
-  relationTo: 'categories',
-  filterOptions: { active: { equals: true } },
-}
+// Filtered relationship
+{ name: 'category', type: 'relationship', relationTo: 'categories', filterOptions: { active: { equals: true } } }
 
-// Conditional field
-{
-  name: 'featuredImage',
-  type: 'upload',
-  relationTo: 'media',
-  admin: {
-    condition: (data) => data.featured === true,
-  },
-}
+// Conditional
+{ name: 'featuredImage', type: 'upload', relationTo: 'media', admin: { condition: (data) => data.featured } }
 
-// Virtual field
-{
-  name: 'fullName',
-  type: 'text',
-  virtual: true,
-  hooks: {
-    afterRead: [({ siblingData }) => `${siblingData.firstName} ${siblingData.lastName}`],
-  },
-}
+// Virtual
+{ name: 'fullName', type: 'text', virtual: true, hooks: { afterRead: [({ siblingData }) => `${siblingData.firstName} ${siblingData.lastName}`] } }
 ```
 
-## Field Types
-
-### Text Field
+## Types
 
 ```typescript
-{
-  name: 'title',
-  type: 'text',
-  required: true,
-  unique: true,
-  minLength: 5,
-  maxLength: 100,
-  index: true,
-  localized: true,
-  defaultValue: 'Default Title',
-  validate: (value) => Boolean(value) || 'Required',
-  admin: {
-    placeholder: 'Enter title...',
-    position: 'sidebar',
-    condition: (data) => data.showTitle === true,
-  },
-}
-```
+// Text
+{ name: 'title', type: 'text', required: true, unique: true, minLength: 5, maxLength: 100, index: true }
 
-### Rich Text (Lexical)
+// Rich Text
+import { lexicalEditor, HeadingFeature } from '@payloadcms/richtext-lexical'
+{ name: 'content', type: 'richText', editor: lexicalEditor({ features: ({ defaultFeatures }) => [...defaultFeatures, HeadingFeature()] }) }
 
-```typescript
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { HeadingFeature, LinkFeature } from '@payloadcms/richtext-lexical'
+// Relationship
+{ name: 'author', type: 'relationship', relationTo: 'users', maxDepth: 2 }
+{ name: 'categories', type: 'relationship', relationTo: 'categories', hasMany: true }
+{ name: 'related', type: 'relationship', relationTo: ['posts', 'pages'], hasMany: true } // Polymorphic
 
-{
-  name: 'content',
-  type: 'richText',
-  required: true,
-  editor: lexicalEditor({
-    features: ({ defaultFeatures }) => [
-      ...defaultFeatures,
-      HeadingFeature({
-        enabledHeadingSizes: ['h1', 'h2', 'h3'],
-      }),
-      LinkFeature({
-        enabledCollections: ['posts', 'pages'],
-      }),
-    ],
-  }),
-}
-```
+// Array
+{ name: 'slides', type: 'array', minRows: 2, maxRows: 10, fields: [{ name: 'title', type: 'text' }] }
 
-### Relationship
+// Blocks
+const HeroBlock: Block = { slug: 'hero', fields: [{ name: 'heading', type: 'text' }] }
+{ name: 'layout', type: 'blocks', blocks: [HeroBlock] }
 
-```typescript
-// Single relationship
-{
-  name: 'author',
-  type: 'relationship',
-  relationTo: 'users',
-  required: true,
-  maxDepth: 2,
-}
+// Select
+{ name: 'status', type: 'select', options: ['draft', 'published'], defaultValue: 'draft' }
+{ name: 'tags', type: 'select', hasMany: true, options: ['tech', 'news'] }
 
-// Multiple relationships (hasMany)
-{
-  name: 'categories',
-  type: 'relationship',
-  relationTo: 'categories',
-  hasMany: true,
-  filterOptions: {
-    active: { equals: true },
-  },
-}
+// Point
+{ name: 'location', type: 'point' }
+// Query: where: { location: { near: [10, 20], maxDistance: 5000 } }
 
-// Polymorphic relationship
-{
-  name: 'relatedContent',
-  type: 'relationship',
-  relationTo: ['posts', 'pages'],
-  hasMany: true,
-}
-```
+// Join (reverse relationship)
+{ name: 'orders', type: 'join', collection: 'orders', on: 'customer' }
 
-### Array
-
-```typescript
-{
-  name: 'slides',
-  type: 'array',
-  minRows: 2,
-  maxRows: 10,
-  labels: {
-    singular: 'Slide',
-    plural: 'Slides',
-  },
-  fields: [
-    {
-      name: 'title',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'image',
-      type: 'upload',
-      relationTo: 'media',
-    },
-  ],
-  admin: {
-    initCollapsed: true,
-  },
-}
-```
-
-### Blocks
-
-```typescript
-import type { Block } from 'payload'
-
-const HeroBlock: Block = {
-  slug: 'hero',
-  interfaceName: 'HeroBlock',
-  fields: [
-    {
-      name: 'heading',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'background',
-      type: 'upload',
-      relationTo: 'media',
-    },
-  ],
-}
-
-const ContentBlock: Block = {
-  slug: 'content',
-  fields: [
-    {
-      name: 'text',
-      type: 'richText',
-    },
-  ],
-}
-
-{
-  name: 'layout',
-  type: 'blocks',
-  blocks: [HeroBlock, ContentBlock],
-}
-```
-
-### Select
-
-```typescript
-{
-  name: 'status',
-  type: 'select',
-  options: [
-    { label: 'Draft', value: 'draft' },
-    { label: 'Published', value: 'published' },
-  ],
-  defaultValue: 'draft',
-  required: true,
-}
-
-// Multiple select
-{
-  name: 'tags',
-  type: 'select',
-  hasMany: true,
-  options: ['tech', 'news', 'sports'],
-}
-```
-
-### Upload
-
-```typescript
-{
-  name: 'featuredImage',
-  type: 'upload',
-  relationTo: 'media',
-  required: true,
-  filterOptions: {
-    mimeType: { contains: 'image' },
-  },
-}
-```
-
-### Point (Geolocation)
-
-```typescript
-{
-  name: 'location',
-  type: 'point',
-  label: 'Location',
-  required: true,
-}
-
-// Query by distance
-const nearbyLocations = await payload.find({
-  collection: 'stores',
-  where: {
-    location: {
-      near: [10, 20], // [longitude, latitude]
-      maxDistance: 5000, // in meters
-      minDistance: 1000,
-    },
-  },
-})
-```
-
-### Join Fields (Reverse Relationships)
-
-```typescript
-// From Users collection - show user's orders
-{
-  name: 'orders',
-  type: 'join',
-  collection: 'orders',
-  on: 'customer', // The field in 'orders' that references this user
-}
-```
-
-### Tabs & Groups
-
-```typescript
 // Tabs
-{
-  type: 'tabs',
-  tabs: [
-    {
-      label: 'Content',
-      fields: [
-        { name: 'title', type: 'text' },
-        { name: 'body', type: 'richText' },
-      ],
-    },
-    {
-      label: 'SEO',
-      fields: [
-        { name: 'metaTitle', type: 'text' },
-        { name: 'metaDescription', type: 'textarea' },
-      ],
-    },
-  ],
-}
+{ type: 'tabs', tabs: [{ label: 'Content', fields: [...] }, { label: 'SEO', fields: [...] }] }
 
-// Group (named)
-{
-  name: 'meta',
-  type: 'group',
-  fields: [
-    { name: 'title', type: 'text' },
-    { name: 'description', type: 'textarea' },
-  ],
-}
+// Group
+{ name: 'meta', type: 'group', fields: [{ name: 'title', type: 'text' }] }
 ```
 
 ## Validation
@@ -304,13 +70,9 @@ const nearbyLocations = await payload.find({
 {
   name: 'email',
   type: 'email',
-  validate: (value, { operation, data, siblingData }) => {
-    if (operation === 'create' && !value) {
-      return 'Email is required'
-    }
-    if (value && !value.includes('@')) {
-      return 'Invalid email format'
-    }
+  validate: (value, { operation }) => {
+    if (operation === 'create' && !value) return 'Required'
+    if (value && !value.includes('@')) return 'Invalid'
     return true
   },
 }
